@@ -1,107 +1,149 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Quiniela Secreta NFL</title><style>
-body{margin:0;font-family:system-ui;background:#07111d;color:#fff}.wrap{max-width:1100px;margin:auto;padding:16px}.card{background:#102033;border:1px solid #294565;border-radius:16px;padding:16px;margin:12px 0}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}@media(max-width:720px){.grid{grid-template-columns:1fr}}button,input,select{font:inherit;padding:10px;border-radius:10px;border:1px solid #345071;background:#081321;color:#fff}button{cursor:pointer}.primary{background:#315df6}.hidden{display:none}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.field{flex:1;min-width:130px}.muted{color:#9eb0c9}.game{padding:12px;background:#0a1828;border:1px solid #294565;border-radius:12px}.bets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}@media(max-width:700px){.bets{grid-template-columns:1fr 1fr}}table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid #294565}.notice{padding:10px;border-left:4px solid #f0b429;background:#30240d;border-radius:8px}.good{border-left-color:#2ecc71;background:#102e20}.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px}.modal.hidden{display:none}.modal .card{width:min(480px,100%)}
-</style></head><body>
-<div id="home" class="wrap"><div class="card"><h1>🏈 Quiniela Secreta NFL</h1><p class="muted">Apuestas ciegas · Bankroll · Prop · Parlay suicida · Leaderboard</p><div class="grid"><button id="btnPlayer" class="primary">Entrar como jugador</button><button id="btnBook">🔒 Entrar como Book</button></div><div class="notice" style="margin-top:12px">Mínimo obligatorio: 1,000 créditos por semana o todo el saldo si queda menos.</div><div id="jsStatus" class="muted" style="margin-top:8px">Cargando sistema…</div></div></div>
-<div id="playerModal" class="modal hidden"><div class="card"><h2>Jugador</h2><div class="field"><label>Nombre</label><select id="playerName"></select></div><div class="field"><label>PIN</label><input id="playerPin" type="password" inputmode="numeric"></div><div class="row" style="margin-top:12px"><button id="playerEnter" class="primary">Entrar</button><button class="closeModal">Cancelar</button></div><div id="playerError" class="muted"></div></div></div>
-<div id="bookModal" class="modal hidden"><div class="card"><h2>Book / Admin</h2><div class="field"><label>PIN</label><input id="bookPin" type="password" inputmode="numeric"></div><div class="row" style="margin-top:12px"><button id="bookEnter" class="primary">Entrar</button><button class="closeModal">Cancelar</button></div><div id="bookError" class="muted"></div></div></div>
-<div id="app" class="wrap hidden"><div class="row"><h2 style="flex:1">🏈 Quiniela Secreta NFL</h2><b id="roleLabel"></b><button id="logout">Salir</button></div><div id="bookNav" class="card hidden"><div class="row"><button data-tab="dashboard">Dashboard</button><button data-tab="ticket">Boletos</button><button data-tab="lines">Líneas</button></div></div><div id="playerNav" class="card hidden"><div class="row"><button data-tab="ticket">Mi boleto</button><button data-tab="dashboard">Leaderboard</button></div></div>
-<section id="dashboard" class="card hidden"><h3>🏆 Leaderboard</h3><table id="leaderboard"></table></section>
-<section id="ticket" class="hidden"><div class="card"><div class="row"><div id="bookPlayerWrap" class="field hidden"><label>Jugador</label><select id="bookPlayer"></select></div><div class="field">Bankroll <b id="bankroll"></b></div><div class="field">Riesgo <b id="risk"></b></div><div class="field">Disponible <b id="available"></b></div></div><div id="minMsg" class="notice"></div></div><div id="games" class="grid"></div><div class="grid"><div class="card"><h3>🎯 Prop semanal</h3><p>¿Habrá un gol de campo de 50+ yardas en Patriots @ Seahawks?</p><div class="row"><select id="propChoice"><option value="">—</option><option>SÍ</option><option>NO</option></select><input id="propAmount" type="number" min="0" step="100" placeholder="Créditos"></div></div><div class="card"><h3>🎰 Parlay Suicida</h3><p class="muted">Selecciona 3–6 picks. Pago: 3=6x · 4=12x · 5=25x · 6=50x.</p><div id="parlaySummary"></div><div class="row"><input id="parlayAmount" type="number" min="0" step="100" placeholder="Créditos"><b id="parlayPay"></b></div></div></div><button id="saveTicket" class="primary">Guardar boleto secreto</button></section>
-<section id="lines" class="card hidden"><h3>Partidos y líneas</h3><p class="muted">Daniel puede editar las líneas aquí. Al guardar, se sincronizan para todos.</p><div id="syncStatus" class="notice good">☁️ Sincronización Supabase activa</div><div id="linesEditor"></div><button id="saveLines" class="primary">Guardar líneas</button></section>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quiniela Secreta NFL</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui;background:#07111d;color:#fff}.wrap{max-width:1180px;margin:auto;padding:16px}.card{background:#102033;border:1px solid #294565;border-radius:16px;padding:16px;margin:12px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media(max-width:760px){.grid{grid-template-columns:1fr}}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.field{flex:1;min-width:130px}.muted{color:#9eb0c9}.hidden{display:none!important}.game{background:#0a1828;border:1px solid #294565;border-radius:12px;padding:12px}.bets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}@media(max-width:700px){.bets{grid-template-columns:1fr 1fr}}button,input,select{font:inherit;padding:10px;border-radius:10px;border:1px solid #345071;background:#081321;color:#fff}button{cursor:pointer}.primary{background:#315df6}.good{border-left:4px solid #2ecc71;background:#102e20}.notice{padding:10px;border-left:4px solid #f0b429;background:#30240d;border-radius:8px}table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid #294565}.modal{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:16px;z-index:99}.modal .card{width:min(480px,100%)}label{display:block;font-size:12px;color:#b8c7da;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div id="home" class="wrap">
+  <div class="card">
+    <h1>🏈 Quiniela Secreta NFL</h1>
+    <p class="muted">Bankroll compartido · apuestas privadas · resultados centralizados · leaderboard en vivo</p>
+    <div class="grid">
+      <button id="btnPlayer" class="primary">Entrar como jugador</button>
+      <button id="btnBook">🔒 Entrar como Book</button>
+    </div>
+    <div class="notice" style="margin-top:12px">Mínimo obligatorio semanal: 1,000 créditos o todo el saldo si queda menos.</div>
+    <div id="cloudStatus" class="muted" style="margin-top:8px">Conectando con Supabase…</div>
+  </div>
 </div>
+
+<div id="playerModal" class="modal hidden"><div class="card">
+  <h2>Jugador</h2>
+  <label>Nombre</label><select id="playerName"></select>
+  <label>PIN</label><input id="playerPin" type="password" inputmode="numeric">
+  <div class="row" style="margin-top:12px"><button id="playerEnter" class="primary">Entrar</button><button class="close">Cancelar</button></div>
+  <div id="playerErr" class="muted"></div>
+</div></div>
+
+<div id="bookModal" class="modal hidden"><div class="card">
+  <h2>Book / Admin</h2>
+  <label>PIN</label><input id="bookPin" type="password" inputmode="numeric">
+  <div class="row" style="margin-top:12px"><button id="bookEnter" class="primary">Entrar</button><button class="close">Cancelar</button></div>
+  <div id="bookErr" class="muted"></div>
+</div></div>
+
+<div id="app" class="wrap hidden">
+  <div class="row"><h2 style="flex:1">🏈 Quiniela Secreta NFL</h2><b id="role"></b><button id="logout">Salir</button></div>
+  <div id="bookNav" class="card hidden"><div class="row"><button data-tab="dashboard">Dashboard</button><button data-tab="ticket">Boletos</button><button data-tab="lines">Líneas</button><button data-tab="results">Resultados</button></div></div>
+  <div id="playerNav" class="card hidden"><div class="row"><button data-tab="ticket">Mi boleto</button><button data-tab="dashboard">Leaderboard</button></div></div>
+
+  <section id="dashboard" class="card hidden">
+    <h3>🏆 Leaderboard</h3>
+    <div class="notice good">🟢 Sincronización automática cada 5 segundos</div>
+    <div id="weekLabel" class="muted" style="margin-top:8px"></div>
+    <table id="leaderboard"></table>
+  </section>
+
+  <section id="ticket" class="hidden">
+    <div class="card"><div class="row"><div class="field">Bankroll <b id="bankroll"></b></div><div class="field">Riesgo <b id="risk"></b></div><div class="field">Disponible <b id="available"></b></div></div><div id="minMsg" class="notice"></div></div>
+    <div id="games" class="grid"></div>
+    <div class="grid">
+      <div class="card"><h3>🎯 Prop semanal</h3><p>¿Habrá un gol de campo de 50+ yardas en el juego designado?</p><div class="row"><select id="propChoice"><option value="">—</option><option>SÍ</option><option>NO</option></select><input id="propAmount" type="number" min="0" step="100" placeholder="Créditos"></div></div>
+      <div class="card"><h3>🎰 Parlay Suicida</h3><p class="muted">Selecciona 3–6 picks. Pago: 3=6x · 4=12x · 5=25x · 6=50x.</p><div id="parlaySummary"></div><div class="row"><input id="parlayAmount" type="number" min="0" step="100" placeholder="Créditos"><b id="parlayPay"></b></div></div>
+    </div>
+    <button id="saveTicket" class="primary">Guardar boleto secreto</button>
+  </section>
+
+  <section id="lines" class="card hidden">
+    <h3>Partidos y líneas</h3>
+    <div class="row"><div class="field"><label>Semana activa</label><input id="weekNumber" type="number" min="1" max="18"></div></div>
+    <div id="lineStatus" class="notice good">☁️ Datos compartidos</div>
+    <div id="linesEditor"></div>
+    <button id="saveLines" class="primary">Guardar líneas para todos</button>
+  </section>
+
+  <section id="results" class="card hidden">
+    <h3>Resultados y liquidación</h3>
+    <div id="resultStatus" class="notice">Captura resultados y liquida una sola vez la semana.</div>
+    <div id="resultsEditor"></div>
+    <div class="row" style="margin-top:12px"><div class="field"><label>Resultado del Prop</label><select id="propResult"><option value="">Pendiente</option><option>SÍ</option><option>NO</option></select></div></div>
+    <button id="settleWeek" class="primary" style="margin-top:12px">Liquidar semana y actualizar bankrolls</button>
+  </section>
+</div>
+
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
-const SUPABASE_URL='https://dpvlxtbbcuxrnrrglfom.supabase.co';
-const SUPABASE_KEY='sb_publishable_xqCJ1Fq-JxmUh1F_5fyvfw_jDg8THva';
-const WEEK=1;
-async function cloudRequest(path,options={}){
-  const headers={apikey:SUPABASE_KEY,'Content-Type':'application/json',...(options.headers||{})};
-  const r=await fetch(SUPABASE_URL+path,{...options,headers});
-  if(!r.ok) throw new Error(await r.text());
-  return r.status===204?null:r.json();
-}
-async function loadSharedLines(){
-  try{
-    const rows=await cloudRequest('/rest/v1/lines?week=eq.'+WEEK+'&select=game_key,away_team,home_team,spread,total,updated_at&order=id.asc');
-    if(!Array.isArray(rows)||!rows.length) return;
-    const byTeams=new Map(rows.map(r=>[(r.away_team+'|'+r.home_team).toLowerCase(),r]));
-    state.games.forEach(g=>{
-      const r=byTeams.get((g.away+'|'+g.home).toLowerCase());
-      if(!r)return;
-      g.as=r.spread==null?'':String(-Number(r.spread));
-      g.hs=r.spread==null?'':String(Number(r.spread));
-      g.total=r.total==null?'':String(r.total);
-    });
-    save();
-    if($('syncStatus')) $('syncStatus').textContent='☁️ Líneas sincronizadas para todos';
-    if(!$('app').classList.contains('hidden')){renderTicket();renderLines();}
-  }catch(e){
-    if($('syncStatus')){$('syncStatus').className='notice';$('syncStatus').textContent='⚠️ No se pudieron cargar líneas compartidas';}
-    console.error(e);
-  }
-}
-
-const players=[
-{name:'Marcos',pin:'1111',alias:'El Rey de la Bancarrota',bank:10000},
-{name:'Joe',pin:'2222',alias:'Manos de Mantequilla',bank:10000},
-{name:'Abraham',pin:'3333',alias:'Donador Oficial de Créditos',bank:10000},
-{name:'Abud',pin:'4444',alias:'No Sé Ni Qué Es Un Touchdown',bank:10000},
-{name:'Fred',pin:'5555',alias:'El Patas de Hule que Todo Pierde',bank:10000},
-{name:'Daniel',pin:'6666',alias:'El Tiburón',bank:10000}
+const URL='https://dpvlxtbbcuxrnrrglfom.supabase.co';
+const KEY='sb_publishable_xqCJ1Fq-JxmUh1F_5fyvfw_jDg8THva';
+const localKey='quiniela_sync_v3';
+const basePlayers=[
+{name:'Marcos',pin:'1111',bank:10000},{name:'Joe',pin:'2222',bank:10000},{name:'Abraham',pin:'3333',bank:10000},
+{name:'Abud',pin:'4444',bank:10000},{name:'Fred',pin:'5555',bank:10000},{name:'Daniel',pin:'6666',bank:10000}
 ];
-const defaultGames=[['Patriots','Seahawks'],['49ers','Rams'],['Bears','Panthers'],['Buccaneers','Bengals'],['Ravens','Colts'],['Bills','Texans'],['Saints','Lions'],['Jets','Titans'],['Falcons','Steelers'],['Browns','Jaguars'],['Cardinals','Chargers'],['Dolphins','Raiders'],['Commanders','Eagles'],['Packers','Vikings'],['Cowboys','Giants'],['Broncos','Chiefs']].map((x,i)=>({id:String(i+1),away:x[0],home:x[1],as:'',hs:'',total:''}));
-const KEY='quiniela_clean_v1';
-let state=JSON.parse(localStorage.getItem(KEY)||'null')||{players,games:defaultGames,tickets:{}};
-// force official PINs every load
-const pins={Marcos:'1111',Joe:'2222',Abraham:'3333',Abud:'4444',Fred:'5555',Daniel:'6666'};
-state.players.forEach(p=>p.pin=pins[p.name]||p.pin);
-let session={role:null,name:null};
-setTimeout(loadSharedLines,0);
-const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
+const baseGames=[['Patriots','Seahawks'],['49ers','Rams'],['Bears','Panthers'],['Buccaneers','Bengals'],['Ravens','Colts'],['Bills','Texans'],['Saints','Lions'],['Jets','Titans'],['Falcons','Steelers'],['Browns','Jaguars'],['Cardinals','Chargers'],['Dolphins','Raiders'],['Commanders','Eagles'],['Packers','Vikings'],['Cowboys','Giants'],['Broncos','Chiefs']].map((x,i)=>({id:String(i+1),away:x[0],home:x[1],as:'',hs:'',total:''}));
+let state=JSON.parse(localStorage.getItem(localKey)||'null')||{players:basePlayers,games:baseGames,tickets:{}};
+let session={role:null,name:null,pin:null,bookPin:null};
+let currentWeek=1;
+const save=()=>localStorage.setItem(localKey,JSON.stringify(state));
 const fmt=n=>Number(n||0).toLocaleString('es-MX');
-$('playerName').innerHTML=state.players.map(p=>`<option>${p.name}</option>`).join('');
-$('bookPlayer').innerHTML=$('playerName').innerHTML;
-$('btnPlayer').addEventListener('click',()=>$('playerModal').classList.remove('hidden'));
-$('btnBook').addEventListener('click',()=>$('bookModal').classList.remove('hidden'));
-document.querySelectorAll('.closeModal').forEach(b=>b.addEventListener('click',()=>document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'))));
-$('playerEnter').addEventListener('click',()=>{const p=state.players.find(x=>x.name===$('playerName').value);if(!p||$('playerPin').value!==p.pin){$('playerError').textContent='PIN incorrecto';return;}session={role:'player',name:p.name};enter();});
-$('bookEnter').addEventListener('click',()=>{if($('bookPin').value!=='9999'){$('bookError').textContent='PIN incorrecto';return;}session={role:'book',name:'Daniel'};enter();});
-$('logout').addEventListener('click',()=>location.reload());
-function enter(){document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));$('home').classList.add('hidden');$('app').classList.remove('hidden');$('roleLabel').textContent=session.role==='book'?'Daniel · Book/Admin':session.name;$('bookNav').classList.toggle('hidden',session.role!=='book');$('playerNav').classList.toggle('hidden',session.role!=='player');$('bookPlayerWrap').classList.toggle('hidden',session.role!=='book');renderAll();showTab(session.role==='book'?'dashboard':'ticket');}
-document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
-function showTab(id){['dashboard','ticket','lines'].forEach(x=>$(x).classList.add('hidden'));$(id).classList.remove('hidden');}
-function currentPlayer(){return state.players.find(p=>p.name===(session.role==='player'?session.name:$('bookPlayer').value))||state.players[0];}
-$('bookPlayer').addEventListener('change',renderTicket);
-function ticket(){const p=currentPlayer();return state.tickets[p.name]||(state.tickets[p.name]={bets:{},prop:{},parlay:{legs:[],amount:0}});}
-function risk(t){let r=0;Object.values(t.bets||{}).forEach(g=>Object.values(g).forEach(v=>r+=Number(v.amount||0)));return r+Number(t.prop.amount||0)+Number(t.parlay.amount||0);}
+async function api(path,opt={}){const h={apikey:KEY,'Content-Type':'application/json',...(opt.headers||{})};const r=await fetch(URL+path,{...opt,headers:h});if(!r.ok)throw new Error(await r.text());return r.status===204?null:r.json();}
+function gameKey(g){return (g.away+'-'+g.home).replace(/\s+/g,'-');}
+function sideName(s){return s==='a'?'away':s==='h'?'home':s==='o'?'over':'under';}
 function line(g,s){if(s==='a')return g.away+' '+(g.as||'PK');if(s==='h')return g.home+' '+(g.hs||'PK');if(s==='o')return 'OVER '+(g.total||'—');return 'UNDER '+(g.total||'—');}
 function parOdds(n){return n===3?6:n===4?12:n===5?25:n===6?50:0;}
-function renderAll(){renderDashboard();renderTicket();renderLines();}
+function currentPlayer(){return state.players.find(p=>p.name===session.name)||state.players[0];}
+function ticket(){const p=currentPlayer();return state.tickets[p.name]||(state.tickets[p.name]={bets:{},prop:{},parlay:{legs:[],amount:0,odds:0}});}
+function risk(t){let r=0;Object.values(t.bets||{}).forEach(g=>Object.values(g).forEach(v=>r+=Number(v.amount||0)));return r+Number(t.prop?.amount||0)+Number(t.parlay?.amount||0);}
+
+async function syncCloud(){
+  try{
+    const a=await api('/rest/v1/app_state?id=eq.global&select=data');
+    if(a?.[0]?.data?.current_week)currentWeek=Number(a[0].data.current_week);
+    $('weekNumber').value=currentWeek;$('weekLabel').textContent='Semana '+currentWeek;
+    const ps=await api('/rest/v1/players?select=name,credits,updated_at');
+    ps.forEach(cp=>{const p=state.players.find(x=>x.name===cp.name);if(p)p.bank=Number(cp.credits||0);});
+    const ls=await api('/rest/v1/lines?week=eq.'+currentWeek+'&select=away_team,home_team,spread,total,updated_at&order=id.asc');
+    if(ls.length){const m=new Map(ls.map(x=>[(x.away_team+'|'+x.home_team).toLowerCase(),x]));state.games.forEach(g=>{const x=m.get((g.away+'|'+g.home).toLowerCase());if(x){g.as=x.spread==null?'':String(-Number(x.spread));g.hs=x.spread==null?'':String(Number(x.spread));g.total=x.total==null?'':String(x.total);}});}
+    save();$('cloudStatus').textContent='✅ Conectado · Semana '+currentWeek;
+    if(!$('app').classList.contains('hidden'))renderAll();
+  }catch(e){$('cloudStatus').textContent='⚠️ Sin conexión con Supabase';console.error(e);}
+}
+
+$('playerName').innerHTML=basePlayers.map(p=>`<option>${p.name}</option>`).join('');
+$('btnPlayer').onclick=()=>$('playerModal').classList.remove('hidden');
+$('btnBook').onclick=()=>$('bookModal').classList.remove('hidden');
+document.querySelectorAll('.close').forEach(b=>b.onclick=()=>document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden')));
+$('playerEnter').onclick=()=>{const p=basePlayers.find(x=>x.name===$('playerName').value);if(!p||$('playerPin').value!==p.pin){$('playerErr').textContent='PIN incorrecto';return;}session={role:'player',name:p.name,pin:$('playerPin').value,bookPin:null};enter();};
+$('bookEnter').onclick=()=>{if($('bookPin').value!=='9999'){$('bookErr').textContent='PIN incorrecto';return;}session={role:'book',name:'Daniel',pin:null,bookPin:$('bookPin').value};enter();};
+$('logout').onclick=()=>location.reload();
+function enter(){document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));$('home').classList.add('hidden');$('app').classList.remove('hidden');$('role').textContent=session.role==='book'?'Daniel · Book/Admin':session.name;$('bookNav').classList.toggle('hidden',session.role!=='book');$('playerNav').classList.toggle('hidden',session.role!=='player');renderAll();showTab(session.role==='book'?'dashboard':'ticket');}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+function showTab(id){['dashboard','ticket','lines','results'].forEach(x=>$(x).classList.add('hidden'));$(id).classList.remove('hidden');if(id==='results')renderResults();}
+
+function renderAll(){renderDashboard();renderTicket();renderLines();if(session.role==='book')renderResults();}
 function renderDashboard(){$('leaderboard').innerHTML='<tr><th>#</th><th>Jugador</th><th>Bankroll</th></tr>'+[...state.players].sort((a,b)=>b.bank-a.bank).map((p,i)=>`<tr><td>${i+1}</td><td>${p.name}</td><td>${fmt(p.bank)}</td></tr>`).join('');}
-function renderTicket(){const p=currentPlayer(),t=ticket(),r=risk(t),m=Math.min(1000,p.bank);$('bankroll').textContent=fmt(p.bank);$('risk').textContent=fmt(r);$('available').textContent=fmt(p.bank-r);$('minMsg').className='notice '+(r>=m?'good':'');$('minMsg').innerHTML=p.bank<=0?'💀 En bancarrota':r>=m?'✅ Mínimo semanal cumplido':`⚠️ Debes apostar mínimo ${fmt(m)}; te faltan ${fmt(m-r)}`;$('propChoice').value=t.prop.choice||'';$('propAmount').value=t.prop.amount||'';$('parlayAmount').value=t.parlay.amount||'';$('games').innerHTML=state.games.map(g=>{const b=t.bets[g.id]||{};return `<div class="game"><b>${g.away} @ ${g.home}</b><div class="bets">${['a','h','o','u'].map(s=>`<div><div class="muted">${line(g,s)}</div><input data-b="${g.id}" data-s="${s}" type="number" min="0" step="100" value="${b[s]?.amount||''}" placeholder="Créditos"><label class="muted"><input data-pg="${g.id}" data-ps="${s}" type="checkbox" ${t.parlay.legs.some(l=>l.id===g.id&&l.s===s)?'checked':''}> Parlay</label></div>`).join('')}</div></div>`}).join('');document.querySelectorAll('[data-pg]').forEach(e=>e.addEventListener('change',()=>toggleParlay(e)));renderParlay();}
+function renderTicket(){if(session.role!=='player')return;const p=currentPlayer(),t=ticket(),r=risk(t),m=Math.min(1000,p.bank);$('bankroll').textContent=fmt(p.bank);$('risk').textContent=fmt(r);$('available').textContent=fmt(p.bank-r);$('minMsg').className='notice '+(r>=m?'good':'');$('minMsg').innerHTML=p.bank<=0?'💀 En bancarrota':r>=m?'✅ Mínimo semanal cumplido':`⚠️ Debes apostar mínimo ${fmt(m)}; te faltan ${fmt(m-r)}`;$('propChoice').value=t.prop?.choice||'';$('propAmount').value=t.prop?.amount||'';$('parlayAmount').value=t.parlay?.amount||'';$('games').innerHTML=state.games.map(g=>{const b=t.bets[g.id]||{};return `<div class="game"><b>${g.away} @ ${g.home}</b><div class="bets">${['a','h','o','u'].map(s=>`<div><div class="muted">${line(g,s)}</div><input data-b="${g.id}" data-s="${s}" type="number" min="0" step="100" value="${b[s]?.amount||''}" placeholder="Créditos"><label class="muted"><input data-pg="${g.id}" data-ps="${s}" type="checkbox" ${t.parlay.legs.some(l=>l.id===g.id&&l.s===s)?'checked':''}> Parlay</label></div>`).join('')}</div></div>`}).join('');document.querySelectorAll('[data-pg]').forEach(e=>e.onchange=()=>toggleParlay(e));renderParlay();}
 function toggleParlay(e){const t=ticket(),g=state.games.find(x=>x.id===e.dataset.pg),s=e.dataset.ps,i=t.parlay.legs.findIndex(l=>l.id===g.id&&l.s===s);if(e.checked){if(t.parlay.legs.length>=6){e.checked=false;alert('Máximo 6 picks');return;}if(i<0)t.parlay.legs.push({id:g.id,s,line:line(g,s)});}else if(i>=0)t.parlay.legs.splice(i,1);save();renderTicket();}
 function renderParlay(){const t=ticket(),o=parOdds(t.parlay.legs.length),a=Number($('parlayAmount').value||t.parlay.amount||0);$('parlaySummary').innerHTML=t.parlay.legs.map((l,i)=>`${i+1}. ${l.line}<br>`).join('')||'<span class="muted">Sin picks</span>';$('parlayPay').textContent=o?`${o}x · premio ${fmt(a*o)}`:'—';}
-$('parlayAmount').addEventListener('input',renderParlay);
-$('saveTicket').addEventListener('click',()=>{const p=currentPlayer(),t=ticket();t.bets={};document.querySelectorAll('[data-b]').forEach(e=>{const a=Number(e.value||0);if(!a)return;const g=state.games.find(x=>x.id===e.dataset.b);t.bets[g.id]??={};t.bets[g.id][e.dataset.s]={amount:a,line:line(g,e.dataset.s)};});t.prop={choice:$('propChoice').value,amount:Number($('propAmount').value||0)};t.parlay.amount=Number($('parlayAmount').value||0);const r=risk(t),m=Math.min(1000,p.bank);if(t.parlay.amount&&(t.parlay.legs.length<3||t.parlay.legs.length>6)){alert('Parlay: mínimo 3 y máximo 6 picks');return;}if(r>p.bank){alert('Excede bankroll');return;}if(r<m){alert(`Debes apostar mínimo ${fmt(m)}`);return;}save();renderTicket();alert('✅ Boleto guardado');});
+$('parlayAmount').oninput=renderParlay;
+
+$('saveTicket').onclick=async()=>{const p=currentPlayer(),t=ticket();t.bets={};document.querySelectorAll('[data-b]').forEach(e=>{const a=Number(e.value||0);if(!a)return;const g=state.games.find(x=>x.id===e.dataset.b);t.bets[g.id]??={};t.bets[g.id][e.dataset.s]={amount:a,line:line(g,e.dataset.s)};});t.prop={choice:$('propChoice').value,amount:Number($('propAmount').value||0),odds:2};t.parlay.amount=Number($('parlayAmount').value||0);t.parlay.odds=parOdds(t.parlay.legs.length);const r=risk(t),m=Math.min(1000,p.bank);if(t.parlay.amount&&(t.parlay.legs.length<3||t.parlay.legs.length>6)){alert('Parlay: mínimo 3 y máximo 6 picks');return;}if(r>p.bank){alert('Excede bankroll');return;}if(r<m){alert(`Debes apostar mínimo ${fmt(m)}`);return;}const cloudGames={};Object.entries(t.bets).forEach(([id,b])=>{const g=state.games.find(x=>x.id===id),k=gameKey(g);cloudGames[k]={};Object.entries(b).forEach(([s,v])=>cloudGames[k][sideName(s)]={amount:Number(v.amount||0),line:v.line});});const cloudParlay={...t.parlay,legs:t.parlay.legs.map(l=>{const g=state.games.find(x=>x.id===l.id);return {gameKey:gameKey(g),side:sideName(l.s),line:l.line};})};try{await api('/functions/v1/save-bet',{method:'POST',headers:{'x-player':session.name,'x-pin':session.pin},body:JSON.stringify({week:currentWeek,bet_data:{games:cloudGames,prop:t.prop,parlay:cloudParlay},risk:r})});save();alert('✅ Boleto guardado en la nube');}catch(e){console.error(e);alert('No se pudo guardar el boleto');}};
+
 function renderLines(){$('linesEditor').innerHTML=state.games.map(g=>`<div class="game row" style="margin:8px 0"><input data-e="${g.id}" data-f="away" value="${g.away}"><input data-e="${g.id}" data-f="as" value="${g.as}" placeholder="Spread visitante"><input data-e="${g.id}" data-f="home" value="${g.home}"><input data-e="${g.id}" data-f="hs" value="${g.hs}" placeholder="Spread local"><input data-e="${g.id}" data-f="total" value="${g.total}" placeholder="O/U"></div>`).join('');}
-$('saveLines').addEventListener('click',async()=>{
-  document.querySelectorAll('[data-e]').forEach(e=>{const g=state.games.find(x=>x.id===e.dataset.e);g[e.dataset.f]=e.value;});
-  save(); renderTicket();
-  const btn=$('saveLines'); const oldText=btn.textContent; btn.disabled=true; btn.textContent='Guardando…';
-  try{
-    const games=state.games.map(g=>({id:g.id,game_key:(g.away+'-'+g.home).replace(/\s+/g,'-'),away:g.away,home:g.home,homeSpread:g.hs,total:g.total}));
-    await cloudRequest('/functions/v1/save-lines',{method:'POST',headers:{'x-book-pin':'9999'},body:JSON.stringify({week:WEEK,games})});
-    if($('syncStatus')){$('syncStatus').className='notice good';$('syncStatus').textContent='✅ Líneas guardadas en la nube. Todos las verán al abrir o recargar.';}
-    alert('✅ Líneas sincronizadas para todos');
-  }catch(e){
-    if($('syncStatus')){$('syncStatus').className='notice';$('syncStatus').textContent='⚠️ Error de sincronización';}
-    alert('No se pudieron sincronizar las líneas. Intenta de nuevo.');
-    console.error(e);
-  }finally{btn.disabled=false;btn.textContent=oldText;}
-});
-save();$('jsStatus').textContent='✅ Sistema listo';
-// Self-test only when ?test=1 is present
-if(new URLSearchParams(location.search).get('test')==='1'){let ok=true;try{$('btnPlayer').click();ok=ok&&!$('playerModal').classList.contains('hidden');$('playerName').value='Daniel';$('playerPin').value='6666';$('playerEnter').click();ok=ok&&!$('app').classList.contains('hidden')&&session.name==='Daniel';}catch(e){ok=false;}document.body.setAttribute('data-selftest',ok?'PASS':'FAIL');}
+$('saveLines').onclick=async()=>{document.querySelectorAll('[data-e]').forEach(e=>{const g=state.games.find(x=>x.id===e.dataset.e);g[e.dataset.f]=e.value;});const w=Number($('weekNumber').value||currentWeek);const games=state.games.map(g=>({game_key:gameKey(g),away:g.away,home:g.home,homeSpread:g.hs,total:g.total}));try{await api('/functions/v1/save-lines',{method:'POST',headers:{'x-book-pin':session.bookPin||'9999'},body:JSON.stringify({week:w,games})});currentWeek=w;save();$('lineStatus').textContent='✅ Semana '+w+' sincronizada para todos';await syncCloud();alert('✅ Líneas actualizadas');}catch(e){console.error(e);alert('No se pudieron guardar las líneas');}};
+
+function resultSelect(id,side){return `<select data-rg="${id}" data-rs="${side}"><option value="">Pendiente</option><option value="win">Ganada</option><option value="loss">Perdida</option><option value="push">Push</option></select>`;}
+function renderResults(){$('resultsEditor').innerHTML=state.games.map(g=>`<div class="game" style="margin:8px 0"><b>${g.away} @ ${g.home}</b><div class="bets"><div><span class="muted">${line(g,'a')}</span>${resultSelect(g.id,'away')}</div><div><span class="muted">${line(g,'h')}</span>${resultSelect(g.id,'home')}</div><div><span class="muted">${line(g,'o')}</span>${resultSelect(g.id,'over')}</div><div><span class="muted">${line(g,'u')}</span>${resultSelect(g.id,'under')}</div></div></div>`).join('');}
+$('settleWeek').onclick=async()=>{if(!confirm('¿Liquidar Semana '+currentWeek+'? No debe ejecutarse dos veces.'))return;const games=state.games.map(g=>{const pick=s=>document.querySelector(`[data-rg="${g.id}"][data-rs="${s}"]`)?.value||'';return {game_key:gameKey(g),away_result:pick('away'),home_result:pick('home'),over_result:pick('over'),under_result:pick('under')};});try{await api('/functions/v1/settle-week',{method:'POST',headers:{'x-book-pin':session.bookPin||'9999'},body:JSON.stringify({week:currentWeek,games,prop_result:$('propResult').value})});$('resultStatus').className='notice good';$('resultStatus').textContent='✅ Semana '+currentWeek+' liquidada; todos verán el leaderboard nuevo en máximo 5 segundos.';await syncCloud();alert('✅ Resultados y bankrolls actualizados');}catch(e){console.error(e);alert('No se pudo liquidar. Puede que ya esté liquidada.');}};
+
+syncCloud();setInterval(syncCloud,5000);
 })();
-</script></body></html>
+</script>
+</body>
+</html>
