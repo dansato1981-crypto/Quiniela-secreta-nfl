@@ -5,20 +5,31 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quiniela Secreta NFL</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui;background:#07111d;color:#fff}.wrap{max-width:1180px;margin:auto;padding:16px}.card{background:#102033;border:1px solid #294565;border-radius:16px;padding:16px;margin:12px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media(max-width:760px){.grid{grid-template-columns:1fr}}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.field{flex:1;min-width:130px}.muted{color:#9eb0c9}.hidden{display:none!important}.game{background:#0a1828;border:1px solid #294565;border-radius:12px;padding:12px}.bets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}@media(max-width:700px){.bets{grid-template-columns:1fr 1fr}}button,input,select{font:inherit;padding:10px;border-radius:10px;border:1px solid #345071;background:#081321;color:#fff}button{cursor:pointer}.primary{background:#315df6}.good{border-left:4px solid #2ecc71;background:#102e20}.notice{padding:10px;border-left:4px solid #f0b429;background:#30240d;border-radius:8px}table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid #294565}.modal{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:16px;z-index:99}.modal .card{width:min(480px,100%)}label{display:block;font-size:12px;color:#b8c7da;margin-bottom:4px}
+:root{--bg:#07111d;--panel:#102033;--panel2:#0a1828;--line:#294565;--txt:#fff;--muted:#9eb0c9;--blue:#315df6;--good:#2ecc71;--warn:#f0b429;--bad:#ff6679}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--txt)}
+.wrap{max-width:1180px;margin:auto;padding:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:800px){.grid,.g3{grid-template-columns:1fr}}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.field{flex:1;min-width:135px}
+button,input,select,textarea{font:inherit;padding:10px;border-radius:10px;border:1px solid #345071;background:#081321;color:#fff}button{cursor:pointer}.primary{background:var(--blue)}
+.good{border-left:4px solid var(--good)!important}.warn{border-left:4px solid var(--warn)!important}.bad{border-left:4px solid var(--bad)!important}
+.hidden{display:none!important}.muted{color:var(--muted)}.notice{padding:10px;border-radius:9px;background:#142237;border:1px solid #345071}.game{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.bets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}@media(max-width:700px){.bets{grid-template-columns:1fr 1fr}}table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:16px;z-index:99}.modal .card{width:min(500px,100%)}label{display:block;font-size:12px;color:#b8c7da;margin-bottom:4px}
+.pill{display:inline-block;padding:5px 8px;border-radius:999px;border:1px solid var(--line);background:#0b1726;font-size:12px}.right{text-align:right}.big{font-size:26px;font-weight:800}
 </style>
 </head>
 <body>
+
 <div id="home" class="wrap">
   <div class="card">
     <h1>🏈 Quiniela Secreta NFL</h1>
-    <p class="muted">Bankroll compartido · apuestas privadas · resultados centralizados · leaderboard en vivo</p>
+    <p class="muted">17 semanas · bankroll compartido · apuestas privadas · resultados y leaderboard centralizados</p>
     <div class="grid">
       <button id="btnPlayer" class="primary">Entrar como jugador</button>
       <button id="btnBook">🔒 Entrar como Book</button>
     </div>
-    <div class="notice" style="margin-top:12px">Mínimo obligatorio semanal: 1,000 créditos o todo el saldo si queda menos.</div>
-    <div id="cloudStatus" class="muted" style="margin-top:8px">Conectando con Supabase…</div>
+    <div class="notice warn" style="margin-top:12px">Mínimo obligatorio: 1,000 créditos por semana o todo el saldo si queda menos.</div>
+    <div id="cloudStatus" class="muted" style="margin-top:8px">Conectando…</div>
   </div>
 </div>
 
@@ -38,111 +49,175 @@
 </div></div>
 
 <div id="app" class="wrap hidden">
-  <div class="row"><h2 style="flex:1">🏈 Quiniela Secreta NFL</h2><b id="role"></b><button id="logout">Salir</button></div>
-  <div id="bookNav" class="card hidden"><div class="row"><button data-tab="dashboard">Dashboard</button><button data-tab="ticket">Boletos</button><button data-tab="lines">Líneas</button><button data-tab="results">Resultados</button></div></div>
-  <div id="playerNav" class="card hidden"><div class="row"><button data-tab="ticket">Mi boleto</button><button data-tab="dashboard">Leaderboard</button></div></div>
+  <div class="row"><h2 style="flex:1">🏈 Quiniela Secreta NFL</h2><span id="weekTop" class="pill"></span><b id="role"></b><button id="logout">Salir</button></div>
+  <div id="bookNav" class="card hidden"><div class="row">
+    <button data-tab="dashboard">Dashboard</button><button data-tab="bookBets">Boletos</button><button data-tab="lines">Semana/Líneas</button><button data-tab="results">Resultados</button>
+  </div></div>
+  <div id="playerNav" class="card hidden"><div class="row"><button data-tab="ticket">Mi boleto</button><button data-tab="dashboard">Leaderboard / Historial</button></div></div>
 
-  <section id="dashboard" class="card hidden">
-    <h3>🏆 Leaderboard</h3>
-    <div class="notice good">🟢 Sincronización automática cada 5 segundos</div>
-    <div id="weekLabel" class="muted" style="margin-top:8px"></div>
-    <table id="leaderboard"></table>
+  <section id="dashboard" class="hidden">
+    <div class="grid g3" id="summaryCards"></div>
+    <div class="card">
+      <div class="row"><h3 style="flex:1">🏆 Leaderboard general</h3><span class="pill">Actualiza cada 5 s</span></div>
+      <table id="leaderboard"></table>
+    </div>
+    <div class="card">
+      <div class="row"><h3 style="flex:1">📊 Resultados por semana</h3><select id="historyWeek"></select></div>
+      <table id="historyTable"></table>
+    </div>
   </section>
 
   <section id="ticket" class="hidden">
-    <div class="card"><div class="row"><div class="field">Bankroll <b id="bankroll"></b></div><div class="field">Riesgo <b id="risk"></b></div><div class="field">Disponible <b id="available"></b></div></div><div id="minMsg" class="notice"></div></div>
+    <div class="card">
+      <div class="row"><div class="field">Bankroll <b id="bankroll"></b></div><div class="field">Riesgo <b id="risk"></b></div><div class="field">Disponible <b id="available"></b></div><div class="field">Estado <b id="ticketState"></b></div></div>
+      <div id="minMsg" class="notice warn"></div>
+    </div>
     <div id="games" class="grid"></div>
     <div class="grid">
-      <div class="card"><h3>🎯 Prop semanal</h3><p>¿Habrá un gol de campo de 50+ yardas en el juego designado?</p><div class="row"><select id="propChoice"><option value="">—</option><option>SÍ</option><option>NO</option></select><input id="propAmount" type="number" min="0" step="100" placeholder="Créditos"></div></div>
-      <div class="card"><h3>🎰 Parlay Suicida</h3><p class="muted">Selecciona 3–6 picks. Pago: 3=6x · 4=12x · 5=25x · 6=50x.</p><div id="parlaySummary"></div><div class="row"><input id="parlayAmount" type="number" min="0" step="100" placeholder="Créditos"><b id="parlayPay"></b></div></div>
+      <div class="card"><h3>🎯 Prop semanal</h3><p id="propQuestion"></p><div class="row"><select id="propChoice"><option value="">—</option><option>SÍ</option><option>NO</option></select><input id="propAmount" type="number" min="0" step="100" placeholder="Créditos"></div></div>
+      <div class="card"><h3>🎰 Parlay Suicida</h3><p class="muted">Selecciona 3–6 picks. Pago: 3=6x · 4=12x · 5=25x · 6=50x. Un push elimina esa pierna; con menos de 3 piernas válidas se devuelve la apuesta.</p><div id="parlaySummary"></div><div class="row"><input id="parlayAmount" type="number" min="0" step="100" placeholder="Créditos"><b id="parlayPay"></b></div></div>
     </div>
     <button id="saveTicket" class="primary">Guardar boleto secreto</button>
   </section>
 
-  <section id="lines" class="card hidden">
-    <h3>Partidos y líneas</h3>
-    <div class="row"><div class="field"><label>Semana activa</label><input id="weekNumber" type="number" min="1" max="18"></div></div>
-    <div id="lineStatus" class="notice good">☁️ Datos compartidos</div>
-    <div id="linesEditor"></div>
-    <button id="saveLines" class="primary">Guardar líneas para todos</button>
+  <section id="bookBets" class="hidden">
+    <div class="card"><div class="row"><h3 style="flex:1">🔐 Boletos secretos del Book</h3><button id="refreshBets">Actualizar</button></div><div id="betsList"></div></div>
   </section>
 
-  <section id="results" class="card hidden">
-    <h3>Resultados y liquidación</h3>
-    <div id="resultStatus" class="notice">Captura resultados y liquida una sola vez la semana.</div>
-    <div id="resultsEditor"></div>
-    <div class="row" style="margin-top:12px"><div class="field"><label>Resultado del Prop</label><select id="propResult"><option value="">Pendiente</option><option>SÍ</option><option>NO</option></select></div></div>
-    <button id="settleWeek" class="primary" style="margin-top:12px">Liquidar semana y actualizar bankrolls</button>
+  <section id="lines" class="hidden">
+    <div class="card">
+      <h3>Semana y líneas</h3>
+      <div class="grid g3">
+        <div class="field"><label>Semana</label><select id="bookWeek"></select></div>
+        <div class="field"><label>Estado</label><select id="weekStatus"><option value="open">Abierta</option><option value="locked">Cerrada</option><option value="settled">Liquidada</option></select></div>
+        <div class="field"><label>Prop semanal</label><input id="bookProp"></div>
+      </div>
+      <div class="row" style="margin-top:12px"><button id="syncNfl" class="primary">↻ Cargar/actualizar NFL</button><button id="saveWeek">Guardar semana</button><button id="setActive">Hacer semana activa</button></div>
+      <div id="lineStatus" class="notice good" style="margin-top:12px">☁️ Sincronización activa</div>
+    </div>
+    <div class="card"><div id="linesEditor"></div><button id="saveLines" class="primary">Guardar líneas manuales</button></div>
+  </section>
+
+  <section id="results" class="hidden">
+    <div class="card">
+      <div class="row"><h3 style="flex:1">Resultados y liquidación</h3><button id="syncResults">↻ Actualizar resultados NFL</button><button id="saveResults">Guardar marcadores manuales</button></div>
+      <div id="resultStatus" class="notice" style="margin-top:10px">El sistema calcula Spread y Over/Under desde el marcador final.</div>
+      <div id="resultsEditor"></div>
+      <div class="row" style="margin-top:12px"><div class="field"><label>Resultado del Prop</label><select id="propResult"><option value="">Pendiente</option><option>SÍ</option><option>NO</option></select></div></div>
+      <button id="settleWeek" class="primary" style="margin-top:12px">Liquidar semana</button>
+    </div>
   </section>
 </div>
 
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
-const URL='https://dpvlxtbbcuxrnrrglfom.supabase.co';
-const KEY='sb_publishable_xqCJ1Fq-JxmUh1F_5fyvfw_jDg8THva';
-const localKey='quiniela_sync_v3';
-const basePlayers=[
-{name:'Marcos',pin:'1111',bank:10000},{name:'Joe',pin:'2222',bank:10000},{name:'Abraham',pin:'3333',bank:10000},
-{name:'Abud',pin:'4444',bank:10000},{name:'Fred',pin:'5555',bank:10000},{name:'Daniel',pin:'6666',bank:10000}
-];
-const baseGames=[['Patriots','Seahawks'],['49ers','Rams'],['Bears','Panthers'],['Buccaneers','Bengals'],['Ravens','Colts'],['Bills','Texans'],['Saints','Lions'],['Jets','Titans'],['Falcons','Steelers'],['Browns','Jaguars'],['Cardinals','Chargers'],['Dolphins','Raiders'],['Commanders','Eagles'],['Packers','Vikings'],['Cowboys','Giants'],['Broncos','Chiefs']].map((x,i)=>({id:String(i+1),away:x[0],home:x[1],as:'',hs:'',total:''}));
-let state=JSON.parse(localStorage.getItem(localKey)||'null')||{players:basePlayers,games:baseGames,tickets:{}};
+const SB_URL='https://dpvlxtbbcuxrnrrglfom.supabase.co';
+const SB_KEY='sb_publishable_xqCJ1Fq-JxmUh1F_5fyvfw_jDg8THva';
+const playerNames=['Marcos','Joe','Abraham','Abud','Fred','Daniel'];
 let session={role:null,name:null,pin:null,bookPin:null};
-let currentWeek=1;
-const save=()=>localStorage.setItem(localKey,JSON.stringify(state));
+let currentWeek=1, bookWeek=1, weeks=[], players=[], lines=[], results=[], stats=[], dirty=false, loadedBet=null, lastBetWeek=null;
+const draftKey=()=>`quiniela_draft_${session.name||'anon'}_${currentWeek}`;
 const fmt=n=>Number(n||0).toLocaleString('es-MX');
-async function api(path,opt={}){const h={apikey:KEY,'Content-Type':'application/json',...(opt.headers||{})};const r=await fetch(URL+path,{...opt,headers:h});if(!r.ok)throw new Error(await r.text());return r.status===204?null:r.json();}
-function gameKey(g){return (g.away+'-'+g.home).replace(/\s+/g,'-');}
-function sideName(s){return s==='a'?'away':s==='h'?'home':s==='o'?'over':'under';}
-function line(g,s){if(s==='a')return g.away+' '+(g.as||'PK');if(s==='h')return g.home+' '+(g.hs||'PK');if(s==='o')return 'OVER '+(g.total||'—');return 'UNDER '+(g.total||'—');}
-function parOdds(n){return n===3?6:n===4?12:n===5?25:n===6?50:0;}
-function currentPlayer(){return state.players.find(p=>p.name===session.name)||state.players[0];}
-function ticket(){const p=currentPlayer();return state.tickets[p.name]||(state.tickets[p.name]={bets:{},prop:{},parlay:{legs:[],amount:0,odds:0}});}
-function risk(t){let r=0;Object.values(t.bets||{}).forEach(g=>Object.values(g).forEach(v=>r+=Number(v.amount||0)));return r+Number(t.prop?.amount||0)+Number(t.parlay?.amount||0);}
+async function req(path,opt={}){const h={apikey:SB_KEY,'Content-Type':'application/json',...(opt.headers||{})};const r=await fetch(SB_URL+path,{...opt,headers:h});const txt=await r.text();let data={};try{data=txt?JSON.parse(txt):{};}catch{data={raw:txt};}if(!r.ok)throw new Error(data.error||txt||('HTTP '+r.status));return data;}
+async function playerApi(action,extra={}){return req('/functions/v1/player-api',{method:'POST',body:JSON.stringify({action,player:session.name,pin:session.pin,week:currentWeek,...extra})});}
+async function bookApi(action,extra={}){return req('/functions/v1/book-api',{method:'POST',body:JSON.stringify({action,pin:session.bookPin,week:bookWeek,...extra})});}
+function weekObj(w=currentWeek){return weeks.find(x=>Number(x.week)===Number(w))||{week:w,status:'locked',prop_question:'Prop de la semana'};}
+function lineKey(g){return g.game_key;}
+function awaySpread(g){return g.spread==null?null:-Number(g.spread);}
+function label(g,side){if(side==='away')return `${g.away_team} ${awaySpread(g)==null?'PK':(awaySpread(g)>0?'+':'')+awaySpread(g)}`;if(side==='home')return `${g.home_team} ${g.spread==null?'PK':(Number(g.spread)>0?'+':'')+Number(g.spread)}`;if(side==='over')return `OVER ${g.total??'—'}`;return `UNDER ${g.total??'—'}`;}
+function parlayOdds(n){return n===3?6:n===4?12:n===5?25:n===6?50:0;}
 
-async function syncCloud(){
-  try{
-    const a=await api('/rest/v1/app_state?id=eq.global&select=data');
-    if(a?.[0]?.data?.current_week)currentWeek=Number(a[0].data.current_week);
-    $('weekNumber').value=currentWeek;$('weekLabel').textContent='Semana '+currentWeek;
-    const ps=await api('/rest/v1/players?select=name,credits,updated_at');
-    ps.forEach(cp=>{const p=state.players.find(x=>x.name===cp.name);if(p)p.bank=Number(cp.credits||0);});
-    const ls=await api('/rest/v1/lines?week=eq.'+currentWeek+'&select=away_team,home_team,spread,total,updated_at&order=id.asc');
-    if(ls.length){const m=new Map(ls.map(x=>[(x.away_team+'|'+x.home_team).toLowerCase(),x]));state.games.forEach(g=>{const x=m.get((g.away+'|'+g.home).toLowerCase());if(x){g.as=x.spread==null?'':String(-Number(x.spread));g.hs=x.spread==null?'':String(Number(x.spread));g.total=x.total==null?'':String(x.total);}});}
-    save();$('cloudStatus').textContent='✅ Conectado · Semana '+currentWeek;
-    if(!$('app').classList.contains('hidden'))renderAll();
-  }catch(e){$('cloudStatus').textContent='⚠️ Sin conexión con Supabase';console.error(e);}
-}
-
-$('playerName').innerHTML=basePlayers.map(p=>`<option>${p.name}</option>`).join('');
+$('playerName').innerHTML=playerNames.map(x=>`<option>${x}</option>`).join('');
 $('btnPlayer').onclick=()=>$('playerModal').classList.remove('hidden');
 $('btnBook').onclick=()=>$('bookModal').classList.remove('hidden');
 document.querySelectorAll('.close').forEach(b=>b.onclick=()=>document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden')));
-$('playerEnter').onclick=()=>{const p=basePlayers.find(x=>x.name===$('playerName').value);if(!p||$('playerPin').value!==p.pin){$('playerErr').textContent='PIN incorrecto';return;}session={role:'player',name:p.name,pin:$('playerPin').value,bookPin:null};enter();};
-$('bookEnter').onclick=()=>{if($('bookPin').value!=='9999'){$('bookErr').textContent='PIN incorrecto';return;}session={role:'book',name:'Daniel',pin:null,bookPin:$('bookPin').value};enter();};
 $('logout').onclick=()=>location.reload();
-function enter(){document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));$('home').classList.add('hidden');$('app').classList.remove('hidden');$('role').textContent=session.role==='book'?'Daniel · Book/Admin':session.name;$('bookNav').classList.toggle('hidden',session.role!=='book');$('playerNav').classList.toggle('hidden',session.role!=='player');renderAll();showTab(session.role==='book'?'dashboard':'ticket');}
+$('playerEnter').onclick=async()=>{session={role:'player',name:$('playerName').value,pin:$('playerPin').value,bookPin:null};try{await playerApi('login');$('playerErr').textContent='';enter();}catch(e){$('playerErr').textContent=e.message;session={role:null,name:null,pin:null,bookPin:null};}};
+$('bookEnter').onclick=async()=>{session={role:'book',name:'Daniel',pin:null,bookPin:$('bookPin').value};try{await bookApi('login');$('bookErr').textContent='';enter();}catch(e){$('bookErr').textContent=e.message;session={role:null,name:null,pin:null,bookPin:null};}};
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
-function showTab(id){['dashboard','ticket','lines','results'].forEach(x=>$(x).classList.add('hidden'));$(id).classList.remove('hidden');if(id==='results')renderResults();}
+$('historyWeek').onchange=renderHistory;
+$('bookWeek').onchange=async()=>{bookWeek=Number($('bookWeek').value);await loadBookWeek();};
 
-function renderAll(){renderDashboard();renderTicket();renderLines();if(session.role==='book')renderResults();}
-function renderDashboard(){$('leaderboard').innerHTML='<tr><th>#</th><th>Jugador</th><th>Bankroll</th></tr>'+[...state.players].sort((a,b)=>b.bank-a.bank).map((p,i)=>`<tr><td>${i+1}</td><td>${p.name}</td><td>${fmt(p.bank)}</td></tr>`).join('');}
-function renderTicket(){if(session.role!=='player')return;const p=currentPlayer(),t=ticket(),r=risk(t),m=Math.min(1000,p.bank);$('bankroll').textContent=fmt(p.bank);$('risk').textContent=fmt(r);$('available').textContent=fmt(p.bank-r);$('minMsg').className='notice '+(r>=m?'good':'');$('minMsg').innerHTML=p.bank<=0?'💀 En bancarrota':r>=m?'✅ Mínimo semanal cumplido':`⚠️ Debes apostar mínimo ${fmt(m)}; te faltan ${fmt(m-r)}`;$('propChoice').value=t.prop?.choice||'';$('propAmount').value=t.prop?.amount||'';$('parlayAmount').value=t.parlay?.amount||'';$('games').innerHTML=state.games.map(g=>{const b=t.bets[g.id]||{};return `<div class="game"><b>${g.away} @ ${g.home}</b><div class="bets">${['a','h','o','u'].map(s=>`<div><div class="muted">${line(g,s)}</div><input data-b="${g.id}" data-s="${s}" type="number" min="0" step="100" value="${b[s]?.amount||''}" placeholder="Créditos"><label class="muted"><input data-pg="${g.id}" data-ps="${s}" type="checkbox" ${t.parlay.legs.some(l=>l.id===g.id&&l.s===s)?'checked':''}> Parlay</label></div>`).join('')}</div></div>`}).join('');document.querySelectorAll('[data-pg]').forEach(e=>e.onchange=()=>toggleParlay(e));renderParlay();}
-function toggleParlay(e){const t=ticket(),g=state.games.find(x=>x.id===e.dataset.pg),s=e.dataset.ps,i=t.parlay.legs.findIndex(l=>l.id===g.id&&l.s===s);if(e.checked){if(t.parlay.legs.length>=6){e.checked=false;alert('Máximo 6 picks');return;}if(i<0)t.parlay.legs.push({id:g.id,s,line:line(g,s)});}else if(i>=0)t.parlay.legs.splice(i,1);save();renderTicket();}
-function renderParlay(){const t=ticket(),o=parOdds(t.parlay.legs.length),a=Number($('parlayAmount').value||t.parlay.amount||0);$('parlaySummary').innerHTML=t.parlay.legs.map((l,i)=>`${i+1}. ${l.line}<br>`).join('')||'<span class="muted">Sin picks</span>';$('parlayPay').textContent=o?`${o}x · premio ${fmt(a*o)}`:'—';}
-$('parlayAmount').oninput=renderParlay;
+async function enter(){document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));$('home').classList.add('hidden');$('app').classList.remove('hidden');$('role').textContent=session.role==='book'?'Daniel · Book/Admin':session.name;$('bookNav').classList.toggle('hidden',session.role!=='book');$('playerNav').classList.toggle('hidden',session.role!=='player');await loadPublic(true);if(session.role==='player'){await loadOwnBet();showTab('ticket');}else{await loadBookDashboard();bookWeek=currentWeek;showTab('dashboard');}}
+function showTab(id){['dashboard','ticket','bookBets','lines','results'].forEach(x=>$(x).classList.add('hidden'));$(id).classList.remove('hidden');if(id==='bookBets')loadBookBets();if(id==='lines'||id==='results')loadBookWeek();}
 
-$('saveTicket').onclick=async()=>{const p=currentPlayer(),t=ticket();t.bets={};document.querySelectorAll('[data-b]').forEach(e=>{const a=Number(e.value||0);if(!a)return;const g=state.games.find(x=>x.id===e.dataset.b);t.bets[g.id]??={};t.bets[g.id][e.dataset.s]={amount:a,line:line(g,e.dataset.s)};});t.prop={choice:$('propChoice').value,amount:Number($('propAmount').value||0),odds:2};t.parlay.amount=Number($('parlayAmount').value||0);t.parlay.odds=parOdds(t.parlay.legs.length);const r=risk(t),m=Math.min(1000,p.bank);if(t.parlay.amount&&(t.parlay.legs.length<3||t.parlay.legs.length>6)){alert('Parlay: mínimo 3 y máximo 6 picks');return;}if(r>p.bank){alert('Excede bankroll');return;}if(r<m){alert(`Debes apostar mínimo ${fmt(m)}`);return;}const cloudGames={};Object.entries(t.bets).forEach(([id,b])=>{const g=state.games.find(x=>x.id===id),k=gameKey(g);cloudGames[k]={};Object.entries(b).forEach(([s,v])=>cloudGames[k][sideName(s)]={amount:Number(v.amount||0),line:v.line});});const cloudParlay={...t.parlay,legs:t.parlay.legs.map(l=>{const g=state.games.find(x=>x.id===l.id);return {gameKey:gameKey(g),side:sideName(l.s),line:l.line};})};try{await api('/functions/v1/save-bet',{method:'POST',headers:{'x-player':session.name,'x-pin':session.pin},body:JSON.stringify({week:currentWeek,bet_data:{games:cloudGames,prop:t.prop,parlay:cloudParlay},risk:r})});save();alert('✅ Boleto guardado en la nube');}catch(e){console.error(e);alert('No se pudo guardar el boleto');}};
+async function loadPublic(forceTicket=false){
+  try{
+    const [a,w,p,s]=await Promise.all([
+      req('/rest/v1/app_state?id=eq.global&select=data'),
+      req('/rest/v1/weeks?select=*&order=week.asc'),
+      req('/rest/v1/players?select=name,credits,updated_at&order=credits.desc'),
+      req('/rest/v1/player_week_stats?select=*&order=week.asc,rank.asc')
+    ]);
+    const oldWeek=currentWeek; currentWeek=Number(a?.[0]?.data?.current_week||1); weeks=w||[]; players=p||[]; stats=s||[];
+    $('weekTop').textContent='Semana '+currentWeek+' · '+weekObj().status.toUpperCase();
+    $('cloudStatus').textContent='✅ Conectado · Semana '+currentWeek;
+    const newLines=await req('/rest/v1/lines?week=eq.'+currentWeek+'&select=*&order=kickoff.asc.nullslast,id.asc'); lines=newLines||[];
+    renderDashboard();
+    if(session.role==='player'){
+      if(oldWeek!==currentWeek){dirty=false;loadedBet=null;lastBetWeek=null;await loadOwnBet();}
+      if((forceTicket||!dirty)&&!$('ticket').classList.contains('hidden'))renderTicket();
+      else updateTicketHeader();
+    }
+  }catch(e){$('cloudStatus').textContent='⚠️ Error de sincronización';console.error(e);}
+}
 
-function renderLines(){$('linesEditor').innerHTML=state.games.map(g=>`<div class="game row" style="margin:8px 0"><input data-e="${g.id}" data-f="away" value="${g.away}"><input data-e="${g.id}" data-f="as" value="${g.as}" placeholder="Spread visitante"><input data-e="${g.id}" data-f="home" value="${g.home}"><input data-e="${g.id}" data-f="hs" value="${g.hs}" placeholder="Spread local"><input data-e="${g.id}" data-f="total" value="${g.total}" placeholder="O/U"></div>`).join('');}
-$('saveLines').onclick=async()=>{document.querySelectorAll('[data-e]').forEach(e=>{const g=state.games.find(x=>x.id===e.dataset.e);g[e.dataset.f]=e.value;});const w=Number($('weekNumber').value||currentWeek);const games=state.games.map(g=>({game_key:gameKey(g),away:g.away,home:g.home,homeSpread:g.hs,total:g.total}));try{await api('/functions/v1/save-lines',{method:'POST',headers:{'x-book-pin':session.bookPin||'9999'},body:JSON.stringify({week:w,games})});currentWeek=w;save();$('lineStatus').textContent='✅ Semana '+w+' sincronizada para todos';await syncCloud();alert('✅ Líneas actualizadas');}catch(e){console.error(e);alert('No se pudieron guardar las líneas');}};
+function renderDashboard(){
+  const sorted=[...players].sort((a,b)=>Number(b.credits)-Number(a.credits));
+  const leader=sorted[0];
+  $('summaryCards').innerHTML=`<div class="card"><div class="muted">Semana activa</div><div class="big">${currentWeek}</div><div>${weekObj().status}</div></div><div class="card"><div class="muted">Líder</div><div class="big">${leader?.name||'—'}</div><div>${fmt(leader?.credits||0)} créditos</div></div><div class="card"><div class="muted">Jugadores activos</div><div class="big">${sorted.filter(x=>Number(x.credits)>0).length}</div><div>de ${sorted.length}</div></div>`;
+  $('leaderboard').innerHTML='<tr><th>#</th><th>Jugador</th><th>Bankroll</th><th>Estatus</th></tr>'+sorted.map((p,i)=>`<tr><td>${i+1}</td><td><b>${p.name}</b></td><td>${fmt(p.credits)}</td><td>${Number(p.credits)>0?'Activo':'💀 Bancarrota'}</td></tr>`).join('');
+  const settled=[...new Set(stats.map(x=>Number(x.week)))].sort((a,b)=>a-b);$('historyWeek').innerHTML=(settled.length?settled:[currentWeek]).map(w=>`<option value="${w}">Semana ${w}</option>`).join('');renderHistory();
+}
+function renderHistory(){const w=Number($('historyWeek').value||currentWeek),rows=stats.filter(x=>Number(x.week)===w).sort((a,b)=>Number(a.rank)-Number(b.rank));$('historyTable').innerHTML='<tr><th>#</th><th>Jugador</th><th>Inicial</th><th>Apostado</th><th>Ganó</th><th>Perdió</th><th>Neto</th><th>Final</th></tr>'+(rows.length?rows.map(x=>`<tr><td>${x.rank}</td><td><b>${x.player}</b></td><td>${fmt(x.opening_bankroll)}</td><td>${fmt(x.wagered)}</td><td>+${fmt(x.gross_winnings)}</td><td>-${fmt(x.gross_losses)}</td><td>${Number(x.net)>=0?'+':''}${fmt(x.net)}</td><td><b>${fmt(x.closing_bankroll)}</b></td></tr>`).join(''):'<tr><td colspan="8" class="muted">Semana aún no liquidada.</td></tr>');}
 
-function resultSelect(id,side){return `<select data-rg="${id}" data-rs="${side}"><option value="">Pendiente</option><option value="win">Ganada</option><option value="loss">Perdida</option><option value="push">Push</option></select>`;}
-function renderResults(){$('resultsEditor').innerHTML=state.games.map(g=>`<div class="game" style="margin:8px 0"><b>${g.away} @ ${g.home}</b><div class="bets"><div><span class="muted">${line(g,'a')}</span>${resultSelect(g.id,'away')}</div><div><span class="muted">${line(g,'h')}</span>${resultSelect(g.id,'home')}</div><div><span class="muted">${line(g,'o')}</span>${resultSelect(g.id,'over')}</div><div><span class="muted">${line(g,'u')}</span>${resultSelect(g.id,'under')}</div></div></div>`).join('');}
-$('settleWeek').onclick=async()=>{if(!confirm('¿Liquidar Semana '+currentWeek+'? No debe ejecutarse dos veces.'))return;const games=state.games.map(g=>{const pick=s=>document.querySelector(`[data-rg="${g.id}"][data-rs="${s}"]`)?.value||'';return {game_key:gameKey(g),away_result:pick('away'),home_result:pick('home'),over_result:pick('over'),under_result:pick('under')};});try{await api('/functions/v1/settle-week',{method:'POST',headers:{'x-book-pin':session.bookPin||'9999'},body:JSON.stringify({week:currentWeek,games,prop_result:$('propResult').value})});$('resultStatus').className='notice good';$('resultStatus').textContent='✅ Semana '+currentWeek+' liquidada; todos verán el leaderboard nuevo en máximo 5 segundos.';await syncCloud();alert('✅ Resultados y bankrolls actualizados');}catch(e){console.error(e);alert('No se pudo liquidar. Puede que ya esté liquidada.');}};
+async function loadOwnBet(){if(session.role!=='player'||lastBetWeek===currentWeek)return;try{const r=await playerApi('get_bet');loadedBet=r.bet||null;lastBetWeek=currentWeek;const draft=localStorage.getItem(draftKey());if(draft&&!loadedBet){try{loadedBet={bet_data:JSON.parse(draft),status:'draft'};}catch{}}renderTicket();}catch(e){console.error(e);}}
+function playerBank(){return Number(players.find(x=>x.name===session.name)?.credits||0);}
+function draftFromLoaded(){return loadedBet?.bet_data||{games:{},prop:{choice:'',amount:0,odds:2},parlay:{legs:[],amount:0,odds:0}};}
+function updateTicketHeader(){if(session.role!=='player')return;const bank=playerBank(),risk=collectRiskOnly(),min=Math.min(1000,bank);$('bankroll').textContent=fmt(bank);$('risk').textContent=fmt(risk);$('available').textContent=fmt(bank-risk);$('ticketState').textContent=loadedBet?.status==='submitted'?'ENVIADO':weekObj().status==='settled'?'LIQUIDADO':'NO ENVIADO';$('minMsg').className='notice '+(risk>=min?'good':'warn');$('minMsg').innerHTML=bank<=0?'💀 En bancarrota':weekObj().status!=='open'?'🔒 Semana cerrada':risk>=min?'✅ Mínimo semanal cumplido':`⚠️ Debes apostar mínimo ${fmt(min)}; te faltan ${fmt(Math.max(0,min-risk))}`;}
+function renderTicket(){
+  const d=draftFromLoaded();$('propQuestion').textContent=weekObj().prop_question||'Prop de la semana';$('propChoice').value=d.prop?.choice||'';$('propAmount').value=d.prop?.amount||'';$('parlayAmount').value=d.parlay?.amount||'';
+  const legs=new Set((d.parlay?.legs||[]).map(l=>l.game_key+'|'+l.side));
+  $('games').innerHTML=lines.map(g=>{const gb=d.games?.[g.game_key]||{};return `<div class="game"><b>${g.away_team} @ ${g.home_team}</b><div class="muted">${g.kickoff?new Date(g.kickoff).toLocaleString('es-MX'):''}</div><div class="bets">${['away','home','over','under'].map(side=>`<div><div class="muted">${label(g,side)}</div><input data-amt="${g.game_key}" data-side="${side}" type="number" min="0" step="100" value="${gb[side]?.amount||''}" placeholder="Créditos"><label><input data-leg="${g.game_key}" data-lside="${side}" type="checkbox" ${legs.has(g.game_key+'|'+side)?'checked':''}> Parlay</label></div>`).join('')}</div></div>`}).join('')||'<div class="card notice warn">Aún no hay partidos cargados para esta semana.</div>';
+  document.querySelectorAll('[data-amt],#propChoice,#propAmount,#parlayAmount,[data-leg]').forEach(e=>{e.oninput=e.onchange=()=>{dirty=true;saveDraft();updateTicketHeader();renderParlay();};});
+  const closed=weekObj().status!=='open'||playerBank()<=0;document.querySelectorAll('#ticket input,#ticket select,#saveTicket').forEach(e=>e.disabled=closed);updateTicketHeader();renderParlay();
+}
+function selectedLegKeys(){return [...document.querySelectorAll('[data-leg]:checked')].map(e=>({game_key:e.dataset.leg,side:e.dataset.lside}));}
+function renderParlay(){const legs=selectedLegKeys(),o=parlayOdds(legs.length),a=Number($('parlayAmount').value||0);$('parlaySummary').innerHTML=legs.length?legs.map((l,i)=>`${i+1}. ${l.game_key} · ${l.side}`).join('<br>'):'<span class="muted">Sin picks</span>';$('parlayPay').textContent=o?`${o}x · premio total ${fmt(a*o)}`:'—';}
+function collectRiskOnly(){let r=0;document.querySelectorAll('[data-amt]').forEach(e=>r+=Number(e.value||0));r+=Number($('propAmount').value||0)+Number($('parlayAmount').value||0);return r;}
+function buildBet(){
+  const games={};document.querySelectorAll('[data-amt]').forEach(e=>{const amt=Number(e.value||0);if(!amt)return;const g=lines.find(x=>x.game_key===e.dataset.amt),side=e.dataset.side;games[g.game_key]??={};games[g.game_key][side]={amount:amt,game_key:g.game_key,side,line:label(g,side),spread_snapshot:side==='away'?awaySpread(g):side==='home'?Number(g.spread):null,total_snapshot:(side==='over'||side==='under')?Number(g.total):null};});
+  const legKeys=selectedLegKeys();const legs=legKeys.map(l=>{const g=lines.find(x=>x.game_key===l.game_key);return {game_key:g.game_key,side:l.side,line:label(g,l.side),spread_snapshot:l.side==='away'?awaySpread(g):l.side==='home'?Number(g.spread):null,total_snapshot:(l.side==='over'||l.side==='under')?Number(g.total):null};});
+  return {games,prop:{choice:$('propChoice').value,amount:Number($('propAmount').value||0),odds:2},parlay:{legs,amount:Number($('parlayAmount').value||0),odds:parlayOdds(legs.length)}};
+}
+function saveDraft(){try{localStorage.setItem(draftKey(),JSON.stringify(buildBet()));}catch{}}
+$('saveTicket').onclick=async()=>{try{const bet=buildBet(),risk=collectRiskOnly(),min=Math.min(1000,playerBank());if(risk<min)throw new Error('Debes apostar mínimo '+fmt(min));if(risk>playerBank())throw new Error('Excede tu bankroll');if(bet.prop.amount>0&&!bet.prop.choice)throw new Error('Selecciona SÍ o NO en el Prop');if(bet.parlay.amount>0&&(bet.parlay.legs.length<3||bet.parlay.legs.length>6))throw new Error('El Parlay debe tener entre 3 y 6 picks');await playerApi('save_bet',{bet_data:bet,total_risk:risk});loadedBet={bet_data:bet,status:'submitted',submitted_at:new Date().toISOString()};dirty=false;localStorage.removeItem(draftKey());updateTicketHeader();alert('✅ Boleto guardado en la nube');}catch(e){alert(e.message);}};
 
-syncCloud();setInterval(syncCloud,5000);
+async function loadBookDashboard(){try{const d=await bookApi('dashboard');weeks=d.weeks||weeks;players=d.players||players;stats=d.stats||stats;renderDashboard();}catch(e){console.error(e);}}
+async function loadBookBets(){try{const d=await bookApi('list_bets');const submitted=new Map((d.bets||[]).map(b=>[b.player,b]));$('betsList').innerHTML=playerNames.map(name=>{const b=submitted.get(name);if(!b)return `<div class="game"><b>${name}</b> · <span class="muted">NO ENVIADO</span></div>`;const details=[];Object.values(b.bet_data?.games||{}).forEach(sels=>Object.values(sels).forEach(s=>details.push(`${s.line} — ${fmt(s.amount)}`)));if(b.bet_data?.prop?.amount)details.push(`PROP ${b.bet_data.prop.choice} — ${fmt(b.bet_data.prop.amount)}`);if(b.bet_data?.parlay?.amount)details.push(`PARLAY ${b.bet_data.parlay.legs.length} picks — ${fmt(b.bet_data.parlay.amount)}`);return `<div class="game"><b>${name}</b> · <span class="pill">${b.status}</span> · Riesgo ${fmt(b.total_risk)}<br><span class="muted">${details.join('<br>')}</span></div>`;}).join('');}catch(e){$('betsList').innerHTML='<div class="notice bad">'+e.message+'</div>';}}
+$('refreshBets').onclick=loadBookBets;
+
+async function loadBookWeek(){
+  if(session.role!=='book')return;bookWeek=Number($('bookWeek').value||bookWeek||currentWeek);
+  try{
+    const [ls,rs]=await Promise.all([req('/rest/v1/lines?week=eq.'+bookWeek+'&select=*&order=kickoff.asc.nullslast,id.asc'),req('/rest/v1/results?week=eq.'+bookWeek+'&select=*')]);
+    const w=weekObj(bookWeek);$('weekStatus').value=w.status;$('bookProp').value=w.prop_question||'';renderBookLines(ls||[]);renderBookResults(ls||[],rs||[]);$('propResult').value=w.prop_result||'';
+  }catch(e){console.error(e);}
+}
+function setupBookWeekSelect(){const opts=Array.from({length:17},(_,i)=>i+1).map(w=>`<option value="${w}">Semana ${w}</option>`).join('');$('bookWeek').innerHTML=opts;$('bookWeek').value=bookWeek;}
+function renderBookLines(ls){$('linesEditor').innerHTML=ls.map(g=>`<div class="game row" style="margin:8px 0"><input data-la="${g.game_key}" data-lf="away_team" value="${g.away_team}"><input data-la="${g.game_key}" data-lf="home_team" value="${g.home_team}"><input data-la="${g.game_key}" data-lf="spread" value="${g.spread??''}" placeholder="Spread local"><input data-la="${g.game_key}" data-lf="total" value="${g.total??''}" placeholder="O/U"><input data-la="${g.game_key}" data-lf="kickoff" value="${g.kickoff??''}" placeholder="Kickoff ISO"></div>`).join('')||'<div class="notice warn">Sin partidos. Usa “Cargar/actualizar NFL”.</div>';}
+function renderBookResults(ls,rs){const rm=new Map(rs.map(r=>[r.game_key,r]));$('resultsEditor').innerHTML=ls.map(g=>{const r=rm.get(g.game_key)||{};return `<div class="game row" style="margin:8px 0"><b style="min-width:220px">${g.away_team} @ ${g.home_team}</b><input data-rk="${g.game_key}" data-rf="away_score" type="number" value="${r.away_score??''}" placeholder="${g.away_team}"><input data-rk="${g.game_key}" data-rf="home_score" type="number" value="${r.home_score??''}" placeholder="${g.home_team}"><label><input data-rk="${g.game_key}" data-rf="completed" type="checkbox" ${r.completed?'checked':''}> Final</label></div>`;}).join('')||'<div class="notice warn">Sin partidos cargados.</div>';}
+$('syncNfl').onclick=async()=>{try{const d=await bookApi('sync_nfl',{season:2026});$('lineStatus').textContent=`✅ ${d.count} partidos actualizados · ${d.completed} terminados`;await loadBookWeek();}catch(e){alert(e.message);}};
+$('syncResults').onclick=async()=>{try{const d=await bookApi('sync_nfl',{season:2026});$('resultStatus').textContent=`✅ ${d.completed} de ${d.count} partidos con resultado final`;await loadBookWeek();}catch(e){alert(e.message);}};
+$('saveWeek').onclick=async()=>{try{await bookApi('save_week',{status:$('weekStatus').value,prop_question:$('bookProp').value,set_active:false});await loadPublic();alert('✅ Semana guardada');}catch(e){alert(e.message);}};
+$('setActive').onclick=async()=>{try{await bookApi('save_week',{status:$('weekStatus').value,prop_question:$('bookProp').value,set_active:true});currentWeek=bookWeek;await loadPublic();alert('✅ Semana '+bookWeek+' activa');}catch(e){alert(e.message);}};
+$('saveLines').onclick=async()=>{try{const rows={};document.querySelectorAll('[data-la]').forEach(e=>{rows[e.dataset.la]??={game_key:e.dataset.la};rows[e.dataset.la][e.dataset.lf]=e.value;});const games=Object.values(rows).map(r=>({game_key:r.game_key,away:r.away_team,home:r.home_team,home_spread:r.spread,total:r.total,kickoff:r.kickoff||null}));await bookApi('save_lines',{games});alert('✅ Líneas guardadas');await loadBookWeek();}catch(e){alert(e.message);}};
+$('saveResults').onclick=async()=>{try{const rows={};document.querySelectorAll('[data-rk]').forEach(e=>{rows[e.dataset.rk]??={game_key:e.dataset.rk};rows[e.dataset.rk][e.dataset.rf]=e.dataset.rf==='completed'?e.checked:e.value;});await bookApi('save_results',{games:Object.values(rows)});alert('✅ Marcadores guardados');await loadBookWeek();}catch(e){alert(e.message);}};
+$('settleWeek').onclick=async()=>{if(!confirm('¿Liquidar Semana '+bookWeek+'? El sistema actualizará bankrolls, historial y abrirá la siguiente semana.'))return;try{await bookApi('settle_week',{prop_result:$('propResult').value});$('resultStatus').className='notice good';$('resultStatus').textContent='✅ Semana liquidada';await loadPublic();await loadBookDashboard();await loadBookWeek();alert('✅ Liquidación completada');}catch(e){$('resultStatus').className='notice bad';$('resultStatus').textContent=e.message;alert(e.message);}};
+
+async function boot(){setupBookWeekSelect();await loadPublic();setInterval(async()=>{await loadPublic();if(session.role==='book'&&!$('dashboard').classList.contains('hidden'))await loadBookDashboard();},5000);}
+boot();
 })();
 </script>
 </body>
